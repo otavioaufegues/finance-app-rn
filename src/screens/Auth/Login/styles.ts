@@ -12,13 +12,3 @@ export const Input = styled.TextInput`
   padding: 10px;
   margin-bottom: 10px;
 `;
-
-export const Button = styled.TouchableOpacity`
-  background-color: ${({ theme }) => theme.colors.primary};
-  padding: 12px;
-  align-items: center;
-`;
-
-export const ButtonText = styled.Text`
-  color: white;
-`;

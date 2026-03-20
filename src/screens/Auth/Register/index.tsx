@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as S from "./styles";
 import { registerUser } from "@/services/auth";
 import { createUserProfile } from "@/services/firestore";
+import Button from "@/components/Button";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -24,9 +25,7 @@ export default function Register() {
       <S.Input placeholder="Email" onChangeText={setEmail} />
       <S.Input placeholder="Senha" secureTextEntry onChangeText={setPassword} />
 
-      <S.Button onPress={handleRegister}>
-        <S.ButtonText>Cadastrar</S.ButtonText>
-      </S.Button>
+      <Button title="Cadastrar" onPress={handleRegister} />
     </S.Container>
   );
 }

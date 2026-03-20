@@ -1,19 +1,13 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AuthRoutes from "./auth.routes";
+import AppRoutes from "./app.routes";
 
-import Home from "@/screens/Home";
-
-const Stack = createNativeStackNavigator();
+const isAuthenticated = false; // 👈 depois vamos trocar isso
 
 export default function Routes() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={Home}
-        />
-      </Stack.Navigator>
+      {isAuthenticated ? <AppRoutes /> : <AuthRoutes />}
     </NavigationContainer>
   );
 }
