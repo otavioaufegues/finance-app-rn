@@ -1,5 +1,10 @@
 export type AuthStackParamList = {
-  Login: undefined;
+  Login:
+    | {
+        message?: string;
+        messageType?: "success" | "error";
+      }
+    | undefined;
   Register: undefined;
 };
 

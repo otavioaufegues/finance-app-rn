@@ -12,3 +12,9 @@ export const Input = styled.TextInput`
   padding: 10px;
   margin-bottom: 10px;
 `;
+
+export const Message = styled.Text<{ type: "success" | "error" }>`
+  margin-bottom: 10px;
+  color: ${({ theme, type }) =>
+    type === "success" ? theme.colors.secondary : "#D32F2F"};
+`;
