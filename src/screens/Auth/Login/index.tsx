@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   NativeStackNavigationProp,
@@ -57,29 +58,40 @@ export default function Login() {
   };
 
   return (
-    <S.Container>
-      {!!route.params?.message && (
-        <S.Message type={route.params.messageType ?? "success"}>
-          {route.params.message}
-        </S.Message>
-      )}
-      <S.Input
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        onChangeText={setEmail}
-        value={email}
-      />
-      <S.Input
-        placeholder="Senha"
-        secureTextEntry
-        onChangeText={setPassword}
-        value={password}
-      />
-      {!!errorMessage && <S.Message type="error">{errorMessage}</S.Message>}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={24}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <S.Container>
+          {!!route.params?.message && (
+            <S.Message type={route.params.messageType ?? "success"}>
+              {route.params.message}
+            </S.Message>
+          )}
+          <S.Input
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            value={email}
+          />
+          <S.Input
+            placeholder="Senha"
+            secureTextEntry
+            onChangeText={setPassword}
+            value={password}
+          />
+          {!!errorMessage && <S.Message type="error">{errorMessage}</S.Message>}
 
-      <Button title="Entrar" onPress={handleLogin} loading={loading} />
-      <Button title="Cadastrar" onPress={handleRegister} variant="outline" />
-    </S.Container>
+          <Button title="Entrar" onPress={handleLogin} loading={loading} />
+          <Button title="Cadastrar" onPress={handleRegister} variant="outline" />
+        </S.Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

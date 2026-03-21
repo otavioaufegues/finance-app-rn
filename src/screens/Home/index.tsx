@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "styled-components/native";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserProfile } from "@/services/firestore";
 import {
   createTransaction,
   removeTransaction,
@@ -41,6 +42,7 @@ export default function Home() {
     useNavigation<NativeStackNavigationProp<AppStackParamList, "Home">>();
   const theme = useTheme();
   const { signOut, user } = useAuth();
+  const [userName, setUserName] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [title, setTitle] = useState(initialFormState.title);
   const [category, setCategory] = useState(initialFormState.category);
@@ -64,6 +66,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) {
+      setUserName("");
       setTransactions([]);
       return;
     }
@@ -71,6 +74,23 @@ export default function Home() {
     const unsubscribe = subscribeToTransactions(user.uid, setTransactions);
 
     return unsubscribe;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const loadUserProfile = async () => {
+      try {
+        const profile = await getUserProfile(user.uid);
+        setUserName(profile?.name ?? user.displayName ?? user.email ?? "");
+      } catch {
+        setUserName(user.displayName ?? user.email ?? "");
+      }
+    };
+
+    void loadUserProfile();
   }, [user]);
 
   useLayoutEffect(() => {
@@ -217,7 +237,7 @@ export default function Home() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <S.HeaderContent>
-            <S.WelcomeText>{user?.email}</S.WelcomeText>
+            <S.WelcomeText>Bem vindo, {userName}!</S.WelcomeText>
 
             <S.SummaryRow>
               <S.SummaryCard>

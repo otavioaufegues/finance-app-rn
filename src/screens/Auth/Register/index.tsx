@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { FirebaseError } from "firebase/app";
 import Button from "@/components/Button";
 import { AuthStackParamList } from "@/routes/types";
-import { registerUser } from "@/services/auth";
+import { logoutUser, registerUser } from "@/services/auth";
 import { createUserProfile } from "@/services/firestore";
 import * as S from "./styles";
 
@@ -28,6 +29,7 @@ const getRegisterErrorMessage = (error: unknown) => {
 export default function Register() {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList, "Register">>();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -35,21 +37,23 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (!name.trim()) {
+      setMessageType("error");
+      setMessage("Informe seu nome.");
+      return;
+    }
+
     try {
       setLoading(true);
       setMessage("");
 
       const user = await registerUser(email, password);
 
-      await createUserProfile(user.uid, user.email || "");
+      await createUserProfile(user.uid, user.email || "", name.trim());
 
       setMessageType("success");
       setMessage("Usuário cadastrado com sucesso.");
 
-      navigation.navigate("Login", {
-        message: "Usuário cadastrado com sucesso. Faça login para continuar.",
-        messageType: "success",
-      });
     } catch (error) {
       setMessageType("error");
       setMessage(getRegisterErrorMessage(error));
@@ -59,23 +63,40 @@ export default function Register() {
   };
 
   return (
-    <S.Container>
-      <S.Input
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        onChangeText={setEmail}
-        value={email}
-      />
-      <S.Input
-        placeholder="Senha"
-        secureTextEntry
-        onChangeText={setPassword}
-        value={password}
-      />
-      {!!message && <S.Message type={messageType}>{message}</S.Message>}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={24}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <S.Container>
+          <S.Input
+            placeholder="Nome"
+            autoCapitalize="words"
+            onChangeText={setName}
+            value={name}
+          />
+          <S.Input
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            value={email}
+          />
+          <S.Input
+            placeholder="Senha"
+            secureTextEntry
+            onChangeText={setPassword}
+            value={password}
+          />
+          {!!message && <S.Message type={messageType}>{message}</S.Message>}
 
-      <Button title="Cadastrar" onPress={handleRegister} loading={loading} />
-    </S.Container>
+          <Button title="Cadastrar" onPress={handleRegister} loading={loading} />
+        </S.Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
