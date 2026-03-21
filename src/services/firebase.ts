@@ -1,8 +1,4 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 const getEnv = (key: string) => {
   const value = process.env[key];
@@ -14,8 +10,6 @@ const getEnv = (key: string) => {
   return value;
 };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: getEnv("EXPO_PUBLIC_FIREBASE_API_KEY"),
   authDomain: getEnv("EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN"),
@@ -26,6 +20,4 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);

@@ -32,9 +32,11 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     try {
+      setLoading(true);
       setMessage("");
 
       const user = await registerUser(email, password);
@@ -51,6 +53,8 @@ export default function Register() {
     } catch (error) {
       setMessageType("error");
       setMessage(getRegisterErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,7 +75,7 @@ export default function Register() {
       />
       {!!message && <S.Message type={messageType}>{message}</S.Message>}
 
-      <Button title="Cadastrar" onPress={handleRegister} />
+      <Button title="Cadastrar" onPress={handleRegister} loading={loading} />
     </S.Container>
   );
 }

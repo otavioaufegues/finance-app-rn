@@ -6,7 +6,6 @@ import {
 } from "@react-navigation/native-stack";
 import { FirebaseError } from "firebase/app";
 import Button from "@/components/Button";
-import { useAuth } from "@/contexts/AuthContext";
 import { AuthStackParamList } from "@/routes/types";
 import { loginUser } from "@/services/auth";
 import * as S from "./styles";
@@ -35,19 +34,21 @@ export default function Login() {
     useNavigation<NativeStackNavigationProp<AuthStackParamList, "Login">>();
   const route =
     useRoute<NativeStackScreenProps<AuthStackParamList, "Login">["route"]>();
-  const { setIsAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
       setErrorMessage("");
 
       await loginUser(email, password);
-      setIsAuthenticated(true);
     } catch (error) {
       setErrorMessage(getLoginErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,7 +78,7 @@ export default function Login() {
       />
       {!!errorMessage && <S.Message type="error">{errorMessage}</S.Message>}
 
-      <Button title="Entrar" onPress={handleLogin} />
+      <Button title="Entrar" onPress={handleLogin} loading={loading} />
       <Button title="Cadastrar" onPress={handleRegister} variant="outline" />
     </S.Container>
   );

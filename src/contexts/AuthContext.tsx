@@ -1,8 +1,12 @@
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { logoutUser, subscribeToAuthChanges } from "@/services/auth";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import type { User } from "firebase/auth";
 
 type AuthContextData = {
   isAuthenticated: boolean;
-  setIsAuthenticated: (value: boolean) => void;
+  isLoading: boolean;
+  user: User | null;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
@@ -12,14 +16,26 @@ type AuthProviderProps = {
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((currentUser) => {
+      setUser(currentUser);
+      setIsLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const value = useMemo(
     () => ({
-      isAuthenticated,
-      setIsAuthenticated,
+      isAuthenticated: !!user,
+      isLoading,
+      user,
+      signOut: logoutUser,
     }),
-    [isAuthenticated],
+    [isLoading, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
