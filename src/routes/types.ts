@@ -1,3 +1,5 @@
+import type { Transaction } from "@/services/transactions";
+
 export type AuthStackParamList = {
   Login:
     | {
@@ -10,4 +12,10 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Home: undefined;
+  TransactionsList: undefined;
+  TransactionForm:
+    | {
+        transaction?: Transaction;
+      }
+    | undefined;
 };
