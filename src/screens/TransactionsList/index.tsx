@@ -1,15 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect } from "react";
 import { Alert, FlatList, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "styled-components/native";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  removeTransaction,
-  subscribeToTransactions,
-  type Transaction,
-} from "@/services/transactions";
+import { useTransactions } from "@/hooks/useTransactions";
+import { removeTransaction } from "@/services/transactions";
 import { AppStackParamList } from "@/routes/types";
 import * as S from "./styles";
 
@@ -24,17 +21,7 @@ export default function TransactionsList() {
     useNavigation<NativeStackNavigationProp<AppStackParamList, "TransactionsList">>();
   const theme = useTheme();
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  useEffect(() => {
-    if (!user) {
-      setTransactions([]);
-      return;
-    }
-
-    const unsubscribe = subscribeToTransactions(user.uid, setTransactions);
-    return unsubscribe;
-  }, [user]);
+  const { transactions, summary } = useTransactions();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -50,21 +37,6 @@ export default function TransactionsList() {
       ),
     });
   }, [navigation, theme.colors.primary, theme.fontSize.large]);
-
-  const summary = useMemo(() => {
-    const income = transactions
-      .filter((item) => item.type === "income")
-      .reduce((total, item) => total + item.amount, 0);
-    const expense = transactions
-      .filter((item) => item.type === "expense")
-      .reduce((total, item) => total + item.amount, 0);
-
-    return {
-      income,
-      expense,
-      balance: income - expense,
-    };
-  }, [transactions]);
 
   const handleDelete = (transactionId: string) => {
     if (!user) {
