@@ -11,20 +11,15 @@ export type TransactionsSummary = {
   balance: number;
 };
 
-export type TransactionsChartData = {
-  categories: string[];
-  series: number[];
+export type BalanceHistoryPoint = {
+  date: string;
+  balance: number;
 };
 
 const EMPTY_SUMMARY: TransactionsSummary = {
   income: 0,
   expense: 0,
   balance: 0,
-};
-
-const EMPTY_CHART_DATA: TransactionsChartData = {
-  categories: [],
-  series: [],
 };
 
 export function useTransactions() {
@@ -74,10 +69,32 @@ export function useTransactions() {
     };
   }, [transactions]);
 
+  const balanceHistory = useMemo<BalanceHistoryPoint[]>(() => {
+    if (!transactions.length) {
+      return [];
+    }
+
+    const sortedTransactions = [...transactions].sort((firstTransaction, secondTransaction) =>
+      firstTransaction.transactionDate.localeCompare(secondTransaction.transactionDate),
+    );
+
+    let currentBalance = 0;
+
+    return sortedTransactions.map((transaction) => {
+      currentBalance +=
+        transaction.type === "income" ? transaction.amount : -transaction.amount;
+
+      return {
+        date: transaction.transactionDate,
+        balance: currentBalance,
+      };
+    });
+  }, [transactions]);
+
   return {
     transactions,
     summary,
     isLoading,
-    chartData: EMPTY_CHART_DATA,
+    balanceHistory,
   };
 }
