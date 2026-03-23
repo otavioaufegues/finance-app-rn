@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCategories } from "@/hooks/useCategories";
 import {
   createTransaction,
   type TransactionInput,
@@ -24,12 +25,14 @@ export default function TransactionForm() {
   const route =
     useRoute<NativeStackScreenProps<AppStackParamList, "TransactionForm">["route"]>();
   const { user } = useAuth();
+  const { categories, isLoading: categoriesLoading } = useCategories();
   const transaction = route.params?.transaction;
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [transactionDate, setTransactionDate] = useState(getCurrentDate());
   const [type, setType] = useState<TransactionType>("expense");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,11 +46,12 @@ export default function TransactionForm() {
     setAmount(String(transaction.amount).replace(".", ","));
     setTransactionDate(transaction.transactionDate);
     setType(transaction.type);
+    setIsCategoryOpen(false);
   }, [transaction]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: transaction ? "Editar transação" : "Nova transação",
+      title: transaction ? "Editar transacao" : "Nova transacao",
     });
   }, [navigation, transaction]);
 
@@ -55,12 +59,12 @@ export default function TransactionForm() {
     const normalizedAmount = normalizeAmount(amount);
 
     if (!title.trim()) {
-      setMessage("Informe a descrição da transação.");
+      setMessage("Informe a descricao da transacao.");
       return null;
     }
 
     if (!category.trim()) {
-      setMessage("Informe a categoria.");
+      setMessage("Selecione uma categoria.");
       return null;
     }
 
@@ -70,7 +74,7 @@ export default function TransactionForm() {
     }
 
     if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
-      setMessage("Informe um valor válido maior que zero.");
+      setMessage("Informe um valor valido maior que zero.");
       return null;
     }
 
@@ -106,7 +110,7 @@ export default function TransactionForm() {
 
       navigation.goBack();
     } catch {
-      setMessage("Não foi possível salvar a transação.");
+      setMessage("Nao foi possivel salvar a transacao.");
     } finally {
       setSubmitting(false);
     }
@@ -122,19 +126,43 @@ export default function TransactionForm() {
         <S.Container>
           <S.FormCard>
             <S.SectionTitle>
-              {transaction ? "Atualize os dados" : "Preencha os dados da transação"}
+              {transaction ? "Atualize os dados" : "Preencha os dados da transacao"}
             </S.SectionTitle>
 
             <S.Input
-              placeholder="Descrição"
+              placeholder="Descricao"
               value={title}
               onChangeText={setTitle}
             />
-            <S.Input
-              placeholder="Categoria"
-              value={category}
-              onChangeText={setCategory}
-            />
+
+            <S.FieldLabel>Categoria</S.FieldLabel>
+            <S.SelectButton onPress={() => setIsCategoryOpen((currentValue) => !currentValue)}>
+              <S.SelectButtonText $placeholder={!category}>
+                {category ||
+                  (categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria")}
+              </S.SelectButtonText>
+            </S.SelectButton>
+
+            {isCategoryOpen && (
+              <S.SelectList>
+                {categories.map((item) => (
+                  <S.SelectOption
+                    key={item.id}
+                    onPress={() => {
+                      setCategory(item.name);
+                      setIsCategoryOpen(false);
+                    }}
+                  >
+                    <S.SelectOptionText>{item.name}</S.SelectOptionText>
+                  </S.SelectOption>
+                ))}
+
+                {!categories.length && !categoriesLoading && (
+                  <S.EmptyOptionsText>Nenhuma categoria disponivel.</S.EmptyOptionsText>
+                )}
+              </S.SelectList>
+            )}
+
             <S.Input
               placeholder="Valor"
               keyboardType="decimal-pad"
@@ -161,7 +189,7 @@ export default function TransactionForm() {
                 onPress={() => setType("expense")}
               >
                 <S.TypeButtonText $selected={type === "expense"}>
-                  Saída
+                  Saida
                 </S.TypeButtonText>
               </S.TypeButton>
             </S.TypeSelector>
@@ -169,7 +197,7 @@ export default function TransactionForm() {
             {!!message && <S.Message>{message}</S.Message>}
 
             <Button
-              title={transaction ? "Salvar alterações" : "Cadastrar transação"}
+              title={transaction ? "Salvar alteracoes" : "Cadastrar transacao"}
               onPress={handleSubmit}
               loading={submitting}
             />

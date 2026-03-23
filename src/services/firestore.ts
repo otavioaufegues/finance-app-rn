@@ -1,5 +1,6 @@
 import { doc, getDoc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
 import { app } from "./firebase";
+import { ensureDefaultCategories } from "./categories";
 
 export const db = getFirestore(app);
 
@@ -18,6 +19,8 @@ export const createUserProfile = async (
     name,
     createdAt: serverTimestamp(),
   });
+
+  await ensureDefaultCategories(uid);
 };
 
 export const getUserProfile = async (uid: string) => {

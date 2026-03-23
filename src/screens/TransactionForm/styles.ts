@@ -28,6 +28,49 @@ export const Input = styled.TextInput`
   color: ${({ theme }) => theme.colors.text};
 `;
 
+export const FieldLabel = styled.Text`
+  margin-top: ${({ theme }) => theme.spacing.sm}px;
+  margin-bottom: ${({ theme }) => theme.spacing.xs}px;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSize.medium}px;
+  font-weight: 600;
+`;
+
+export const SelectButton = styled.TouchableOpacity`
+  border: 1px solid ${({ theme }) => theme.colors.gray};
+  border-radius: 10px;
+  padding: 12px;
+  background-color: ${({ theme }) => theme.colors.white};
+`;
+
+export const SelectButtonText = styled.Text<{ $placeholder: boolean }>`
+  color: ${({ $placeholder, theme }) =>
+    $placeholder ? theme.colors.gray : theme.colors.text};
+`;
+
+export const SelectList = styled.View`
+  margin-top: ${({ theme }) => theme.spacing.xs}px;
+  border: 1px solid ${({ theme }) => theme.colors.gray};
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
+export const SelectOption = styled.TouchableOpacity`
+  padding: 12px;
+  background-color: ${({ theme }) => theme.colors.white};
+  border-top-width: 1px;
+  border-top-color: ${({ theme }) => theme.colors.background};
+`;
+
+export const SelectOptionText = styled.Text`
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const EmptyOptionsText = styled.Text`
+  padding: 12px;
+  color: ${({ theme }) => theme.colors.gray};
+`;
+
 export const TypeSelector = styled.View`
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing.sm}px;
