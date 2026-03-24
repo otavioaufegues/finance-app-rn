@@ -1,12 +1,17 @@
 import {
   addDoc,
   collection,
+  type DocumentData,
   deleteDoc,
   doc,
+  getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
+  type QueryDocumentSnapshot,
   serverTimestamp,
+  startAfter,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "./firestore";
@@ -28,6 +33,13 @@ export type Transaction = TransactionInput & {
 const getTransactionsCollection = (uid: string) =>
   collection(db, "users", uid, "transactions");
 
+const mapTransactionDocument = (
+  item: QueryDocumentSnapshot<DocumentData>,
+): Transaction => ({
+  id: item.id,
+  ...(item.data() as TransactionInput),
+});
+
 export const subscribeToTransactions = (
   uid: string,
   callback: (transactions: Transaction[]) => void,
@@ -38,13 +50,41 @@ export const subscribeToTransactions = (
   );
 
   return onSnapshot(transactionsQuery, (snapshot) => {
-    const transactions = snapshot.docs.map((item) => ({
-      id: item.id,
-      ...(item.data() as TransactionInput),
-    }));
+    const transactions = snapshot.docs.map(mapTransactionDocument);
 
     callback(transactions);
   });
+};
+
+export type TransactionsPageCursor = QueryDocumentSnapshot<DocumentData> | null;
+
+export type TransactionsPage = {
+  transactions: Transaction[];
+  cursor: TransactionsPageCursor;
+  hasMore: boolean;
+};
+
+export const getTransactionsPage = async (
+  uid: string,
+  pageSize: number,
+  cursor?: TransactionsPageCursor,
+): Promise<TransactionsPage> => {
+  const baseQuery = query(
+    getTransactionsCollection(uid),
+    orderBy("transactionDate", "desc"),
+  );
+
+  const paginatedQuery = cursor
+    ? query(baseQuery, startAfter(cursor), limit(pageSize))
+    : query(baseQuery, limit(pageSize));
+
+  const snapshot = await getDocs(paginatedQuery);
+
+  return {
+    transactions: snapshot.docs.map(mapTransactionDocument),
+    cursor: snapshot.docs[snapshot.docs.length - 1] ?? null,
+    hasMore: snapshot.docs.length === pageSize,
+  };
 };
 
 export const createTransaction = async (uid: string, data: TransactionInput) => {

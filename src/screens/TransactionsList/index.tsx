@@ -1,11 +1,14 @@
-import { useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect } from "react";
 import { Alert, FlatList, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "styled-components/native";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTransactions } from "@/hooks/useTransactions";
+import {
+  useInfiniteTransactions,
+  useTransactions,
+} from "@/hooks/useTransactions";
 import { removeTransaction } from "@/services/transactions";
 import { AppStackParamList } from "@/routes/types";
 import * as S from "./styles";
@@ -18,14 +21,25 @@ const formatCurrency = (value: number) =>
 
 export default function TransactionsList() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<AppStackParamList, "TransactionsList">>();
+    useNavigation<
+      NativeStackNavigationProp<AppStackParamList, "TransactionsList">
+    >();
   const theme = useTheme();
   const { user } = useAuth();
-  const { transactions, summary } = useTransactions();
+  const { summary } = useTransactions();
+  const {
+    transactions,
+    isLoading,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
+    refresh,
+    loadMore,
+  } = useInfiniteTransactions();
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: "Transações",
+      title: "Transacoes",
       headerTitleStyle: {
         color: theme.colors.primary,
         fontSize: theme.fontSize.large,
@@ -38,12 +52,18 @@ export default function TransactionsList() {
     });
   }, [navigation, theme.colors.primary, theme.fontSize.large]);
 
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
+
   const handleDelete = (transactionId: string) => {
     if (!user) {
       return;
     }
 
-    Alert.alert("Excluir transação", "Deseja remover esta transação?", [
+    Alert.alert("Excluir transacao", "Deseja remover esta transacao?", [
       {
         text: "Cancelar",
         style: "cancel",
@@ -53,6 +73,7 @@ export default function TransactionsList() {
         style: "destructive",
         onPress: async () => {
           await removeTransaction(user.uid, transactionId);
+          void refresh();
         },
       },
     ]);
@@ -64,6 +85,14 @@ export default function TransactionsList() {
         data={transactions}
         keyExtractor={(item) => item.id}
         contentContainerStyle={S.listContent}
+        onEndReachedThreshold={0.4}
+        onEndReached={() => {
+          if (!isLoading && hasMore) {
+            void loadMore();
+          }
+        }}
+        refreshing={isRefreshing}
+        onRefresh={() => void refresh()}
         ListHeaderComponent={
           <S.HeaderContent>
             <S.SummaryRow>
@@ -75,7 +104,7 @@ export default function TransactionsList() {
               </S.SummaryCard>
 
               <S.SummaryCard>
-                <S.SummaryLabel>Saídas</S.SummaryLabel>
+                <S.SummaryLabel>Saidas</S.SummaryLabel>
                 <S.SummaryValue $variant="expense">
                   {formatCurrency(summary.expense)}
                 </S.SummaryValue>
@@ -90,18 +119,29 @@ export default function TransactionsList() {
             </S.BalanceCard>
 
             <Button
-              title="Nova transação"
+              title="Nova transacao"
               onPress={() => navigation.navigate("TransactionForm")}
             />
 
-            <S.SectionTitle>Histórico</S.SectionTitle>
+            <S.SectionTitle>Historico</S.SectionTitle>
           </S.HeaderContent>
         }
         ItemSeparatorComponent={() => <S.ItemSeparator />}
         ListEmptyComponent={
           <S.EmptyState>
-            Nenhuma transação cadastrada para este usuário.
+            {isLoading
+              ? "Carregando transacoes..."
+              : "Nenhuma transacao cadastrada para este usuario."}
           </S.EmptyState>
+        }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <S.ListFooterText>Carregando mais transacoes...</S.ListFooterText>
+          ) : !hasMore && transactions.length ? (
+            <S.ListFooterText>
+              Todas as transacoes foram carregadas.
+            </S.ListFooterText>
+          ) : null
         }
         renderItem={({ item }) => (
           <S.TransactionCard>
@@ -114,7 +154,7 @@ export default function TransactionsList() {
             </S.TransactionRow>
 
             <S.TransactionMeta>
-              {item.category} • {item.transactionDate}
+              {item.category} | {item.transactionDate}
             </S.TransactionMeta>
 
             <S.ActionsRow>

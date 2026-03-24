@@ -122,3 +122,9 @@ export const HeaderButtonText = styled.Text`
   font-size: ${({ theme }) => theme.fontSize.medium}px;
   font-weight: 600;
 `;
+
+export const ListFooterText = styled.Text`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.gray};
+  padding: ${({ theme }) => theme.spacing.md}px 0;
+`;

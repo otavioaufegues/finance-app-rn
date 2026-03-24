@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  getTransactionsPage,
   subscribeToTransactions,
   type Transaction,
+  type TransactionsPageCursor,
 } from "@/services/transactions";
 
 export type TransactionsSummary = {
@@ -96,5 +98,90 @@ export function useTransactions() {
     summary,
     isLoading,
     balanceHistory,
+  };
+}
+
+const DEFAULT_TRANSACTIONS_PAGE_SIZE = 20;
+
+export function useInfiniteTransactions(
+  pageSize = DEFAULT_TRANSACTIONS_PAGE_SIZE,
+) {
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const cursorRef = useRef<TransactionsPageCursor>(null);
+  const hasMoreRef = useRef(true);
+  const isLoadingMoreRef = useRef(false);
+
+  const loadPage = useCallback(
+    async (mode: "initial" | "refresh" | "append") => {
+      if (!user) {
+        setTransactions([]);
+        cursorRef.current = null;
+        setHasMore(false);
+        hasMoreRef.current = false;
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setIsLoadingMore(false);
+        isLoadingMoreRef.current = false;
+        return;
+      }
+
+      if (mode === "append") {
+        if (isLoadingMoreRef.current || !hasMoreRef.current) {
+          return;
+        }
+
+        isLoadingMoreRef.current = true;
+        setIsLoadingMore(true);
+      } else if (mode === "refresh") {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      try {
+        const page = await getTransactionsPage(
+          user.uid,
+          pageSize,
+          mode === "append" ? cursorRef.current : null,
+        );
+
+        setTransactions((currentValue) =>
+          mode === "append"
+            ? [...currentValue, ...page.transactions]
+            : page.transactions,
+        );
+        cursorRef.current = page.cursor;
+        setHasMore(page.hasMore);
+        hasMoreRef.current = page.hasMore;
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setIsLoadingMore(false);
+        isLoadingMoreRef.current = false;
+      }
+    },
+    [pageSize, user],
+  );
+
+  useEffect(() => {
+    void loadPage("initial");
+  }, [loadPage]);
+
+  const refresh = useCallback(() => loadPage("refresh"), [loadPage]);
+  const loadMore = useCallback(() => loadPage("append"), [loadPage]);
+
+  return {
+    transactions,
+    isLoading,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
+    refresh,
+    loadMore,
   };
 }
