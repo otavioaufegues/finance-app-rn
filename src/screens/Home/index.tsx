@@ -1,5 +1,10 @@
-import { useEffect, useLayoutEffect, useState } from "react";
-import { ScrollView, TouchableOpacity, useWindowDimensions } from "react-native";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  Animated,
+  ScrollView,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Button from "@/components/Button";
@@ -21,6 +26,7 @@ export default function Home() {
   const navigation =
     useNavigation<NativeStackNavigationProp<AppStackParamList, "Home">>();
   const { width: screenWidth } = useWindowDimensions();
+  const scrollX = useRef(new Animated.Value(0)).current;
   const { signOut, user } = useAuth();
   const { summary, balanceHistory, transactions } = useTransactions();
   const [userName, setUserName] = useState("");
@@ -54,7 +60,8 @@ export default function Home() {
     });
   }, [navigation, signOut]);
 
-  const chartWidth = Math.max(screenWidth - 100, 280);
+  const carouselWidth = Math.max(screenWidth - 32, 280);
+  const chartWidth = Math.max(carouselWidth - 68, 220);
 
   return (
     <S.Container>
@@ -77,15 +84,65 @@ export default function Home() {
             </S.BalanceValue>
           </S.BalanceCard>
 
-          <BalanceEvolutionChart
-            balanceHistory={balanceHistory}
-            chartWidth={chartWidth}
-          />
+          <S.ChartCarouselSection>
+            <Animated.ScrollView
+              horizontal
+              pagingEnabled
+              bounces={false}
+              decelerationRate="fast"
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={carouselWidth}
+              snapToAlignment="start"
+              scrollEventThrottle={16}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false },
+              )}
+            >
+              <S.ChartSlide style={{ width: carouselWidth }}>
+                <BalanceEvolutionChart
+                  balanceHistory={balanceHistory}
+                  chartWidth={chartWidth}
+                />
+              </S.ChartSlide>
 
-          <CategoryPieChart
-            transactions={transactions}
-            balance={summary.balance}
-          />
+              <S.ChartSlide style={{ width: carouselWidth }}>
+                <CategoryPieChart
+                  transactions={transactions}
+                  balance={summary.balance}
+                />
+              </S.ChartSlide>
+            </Animated.ScrollView>
+
+            <S.ChartPagination>
+              {[0, 1].map((pageIndex) => {
+                const inputRange = [
+                  (pageIndex - 1) * carouselWidth,
+                  pageIndex * carouselWidth,
+                  (pageIndex + 1) * carouselWidth,
+                ];
+
+                const opacity = scrollX.interpolate({
+                  inputRange,
+                  outputRange: [0.35, 1, 0.35],
+                  extrapolate: "clamp",
+                });
+
+                const scaleX = scrollX.interpolate({
+                  inputRange,
+                  outputRange: [1, 1.8, 1],
+                  extrapolate: "clamp",
+                });
+
+                return (
+                  <S.PaginationDot
+                    key={pageIndex}
+                    style={{ opacity, transform: [{ scaleX }] }}
+                  />
+                );
+              })}
+            </S.ChartPagination>
+          </S.ChartCarouselSection>
 
         </S.Content>
       </ScrollView>

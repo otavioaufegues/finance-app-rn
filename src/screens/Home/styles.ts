@@ -1,4 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Animated } from "react-native";
 import styled from "styled-components/native";
 
 export const scrollContent = {
@@ -51,6 +52,27 @@ export const ChartCard = styled.View`
   border-radius: 20px;
   padding: ${({ theme }) => theme.spacing.sm}px;
   gap: ${({ theme }) => theme.spacing.md}px;
+`;
+
+export const ChartCarouselSection = styled.View`
+  gap: ${({ theme }) => theme.spacing.sm}px;
+`;
+
+export const ChartSlide = styled.View`
+  padding-right: ${({ theme }) => theme.spacing.sm}px;
+`;
+
+export const ChartPagination = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.xs}px;
+`;
+
+export const PaginationDot = styled(Animated.View)`
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background-color: ${({ theme }) => theme.colors.primary};
 `;
 
 export const ChartHeader = styled.View`
