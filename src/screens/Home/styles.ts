@@ -79,3 +79,64 @@ export const HeaderButtonText = styled.Text`
   font-size: ${({ theme }) => theme.fontSize.medium}px;
   font-weight: 600;
 `;
+
+export const PieSection = styled.View`
+  gap: ${({ theme }) => theme.spacing.md}px;
+  align-items: center;
+`;
+
+export const PieChartWrapper = styled.View`
+  align-items: center;
+  justify-content: center;
+`;
+
+export const PieCenterContent = styled.View`
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+`;
+
+export const PieCenterLabel = styled.Text`
+  color: ${({ theme }) => theme.colors.gray};
+  font-size: ${({ theme }) => theme.fontSize.small}px;
+`;
+
+export const PieCenterValue = styled.Text`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSize.medium}px;
+  font-weight: 700;
+`;
+
+export const LegendList = styled.View`
+  width: 100%;
+  gap: ${({ theme }) => theme.spacing.sm}px;
+`;
+
+export const LegendItem = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm}px;
+`;
+
+export const LegendIndicator = styled.View<{ $color: string }>`
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background-color: ${({ $color }) => $color};
+`;
+
+export const LegendContent = styled.View`
+  flex: 1;
+  gap: 2px;
+`;
+
+export const LegendTitle = styled.Text`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSize.medium}px;
+  font-weight: 600;
+`;
+
+export const LegendSubtitle = styled.Text`
+  color: ${({ theme }) => theme.colors.gray};
+  font-size: ${({ theme }) => theme.fontSize.small}px;
+`;
