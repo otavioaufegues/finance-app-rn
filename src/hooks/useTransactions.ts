@@ -138,8 +138,15 @@ export function useInfiniteTransactions(
         isLoadingMoreRef.current = true;
         setIsLoadingMore(true);
       } else if (mode === "refresh") {
+        cursorRef.current = null;
+        setHasMore(true);
+        hasMoreRef.current = true;
         setIsRefreshing(true);
       } else {
+        cursorRef.current = null;
+        setHasMore(true);
+        hasMoreRef.current = true;
+        setTransactions([]);
         setIsLoading(true);
       }
 

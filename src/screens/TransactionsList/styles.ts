@@ -16,6 +16,59 @@ export const HeaderContent = styled.View`
   margin-bottom: ${({ theme }) => theme.spacing.lg}px;
 `;
 
+export const FiltersCard = styled.View`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 16px;
+  padding: ${({ theme }) => theme.spacing.md}px;
+  gap: ${({ theme }) => theme.spacing.sm}px;
+`;
+
+export const FiltersHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md}px;
+`;
+
+export const ClearFiltersButton = styled.TouchableOpacity`
+  padding-vertical: ${({ theme }) => theme.spacing.xs}px;
+`;
+
+export const ClearFiltersText = styled.Text`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 700;
+`;
+
+export const FilterLabel = styled.Text`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSize.medium}px;
+  font-weight: 600;
+`;
+
+export const chipsContent = {
+  gap: 8,
+};
+
+export const ChipsScroll = styled.ScrollView`
+  flex-grow: 0;
+`;
+
+export const FilterChip = styled.TouchableOpacity<{ $selected: boolean }>`
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid
+    ${({ $selected, theme }) =>
+      $selected ? theme.colors.primary : theme.colors.gray};
+  background-color: ${({ $selected, theme }) =>
+    $selected ? theme.colors.primary : theme.colors.white};
+`;
+
+export const FilterChipText = styled.Text<{ $selected: boolean }>`
+  color: ${({ $selected, theme }) =>
+    $selected ? theme.colors.white : theme.colors.text};
+  font-weight: 600;
+`;
+
 export const SummaryRow = styled.View`
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing.md}px;
