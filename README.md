@@ -121,6 +121,15 @@ Observacoes:
 - `TransactionsList`: listagem, filtros e exclusao de transacoes
 - `TransactionForm`: cadastro e edicao de transacoes com comprovante
 
+## Usuário preenchido
+
+Para verificar o scroll infinito utilize o usuário
+com 50 transações cadastradas 
+
+email: email@email.com
+senha: 123456
+
+
 ## Diferenciais do Projeto
 
 - separacao clara entre autenticacao, navegacao, hooks e servicos
