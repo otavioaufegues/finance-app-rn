@@ -60,6 +60,9 @@ O app depende de variaveis de ambiente publicas do Expo para conectar ao Firebas
 
 Crie um arquivo `.env` na raiz do projeto com o seguinte modelo:
 
+- O arquivo .env do trabalho foi enviado junto com os outros arquivos na plataforma
+
+
 ```env
 EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
