@@ -103,6 +103,16 @@ export function useTransactions() {
 
 const DEFAULT_TRANSACTIONS_PAGE_SIZE = 20;
 
+const mergeUniqueTransactions = (transactions: Transaction[]) => {
+  const uniqueTransactions = new Map<string, Transaction>();
+
+  transactions.forEach((transaction) => {
+    uniqueTransactions.set(transaction.id, transaction);
+  });
+
+  return Array.from(uniqueTransactions.values());
+};
+
 export function useInfiniteTransactions(
   pageSize = DEFAULT_TRANSACTIONS_PAGE_SIZE,
 ) {
@@ -115,6 +125,7 @@ export function useInfiniteTransactions(
   const cursorRef = useRef<TransactionsPageCursor>(null);
   const hasMoreRef = useRef(true);
   const isLoadingMoreRef = useRef(false);
+  const reloadVersionRef = useRef(0);
 
   const loadPage = useCallback(
     async (mode: "initial" | "refresh" | "append") => {
@@ -138,17 +149,21 @@ export function useInfiniteTransactions(
         isLoadingMoreRef.current = true;
         setIsLoadingMore(true);
       } else if (mode === "refresh") {
+        reloadVersionRef.current += 1;
         cursorRef.current = null;
         setHasMore(true);
         hasMoreRef.current = true;
         setIsRefreshing(true);
       } else {
+        reloadVersionRef.current += 1;
         cursorRef.current = null;
         setHasMore(true);
         hasMoreRef.current = true;
         setTransactions([]);
         setIsLoading(true);
       }
+
+      const requestReloadVersion = reloadVersionRef.current;
 
       try {
         const page = await getTransactionsPage(
@@ -157,10 +172,17 @@ export function useInfiniteTransactions(
           mode === "append" ? cursorRef.current : null,
         );
 
+        if (
+          mode === "append" &&
+          requestReloadVersion !== reloadVersionRef.current
+        ) {
+          return;
+        }
+
         setTransactions((currentValue) =>
           mode === "append"
-            ? [...currentValue, ...page.transactions]
-            : page.transactions,
+            ? mergeUniqueTransactions([...currentValue, ...page.transactions])
+            : mergeUniqueTransactions(page.transactions),
         );
         cursorRef.current = page.cursor;
         setHasMore(page.hasMore);
