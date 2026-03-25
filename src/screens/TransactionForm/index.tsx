@@ -19,6 +19,9 @@ import {
 } from "@/services/transactions";
 import { AppStackParamList } from "@/routes/types";
 import * as S from "./styles";
+import * as ImagePicker from "expo-image-picker";
+import { uploadReceipt } from "@/services/uploadReceipt";
+
 
 const getCurrentDate = () => new Date().toISOString().slice(0, 10);
 
@@ -98,6 +101,24 @@ export default function TransactionForm() {
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     parseDateString(getCurrentDate()),
   );
+  const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  useEffect(() => {
+    if (transaction?.receiptUrl) {
+      setImage(transaction.receiptUrl);
+    }
+  }, [transaction]);
 
   useEffect(() => {
     if (!transaction) {
@@ -180,32 +201,40 @@ export default function TransactionForm() {
       amount: normalizedAmount,
       transactionDate,
       type,
+      receiptUrl: image || ''
     };
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     const payload = getPayload();
-
-    if (!payload) {
-      return;
-    }
+    if (!payload) return;
 
     try {
       setSubmitting(true);
       setMessage("");
 
+      let receiptUrl = transaction?.receiptUrl || "";
+
+      if (image) {
+        receiptUrl = await uploadReceipt(image, user.uid);
+      }
+
+      const finalPayload = {
+        ...payload,
+        receiptUrl,
+      };
+
       if (transaction) {
-        await updateTransaction(user.uid, transaction.id, payload);
+        await updateTransaction(user.uid, transaction.id, finalPayload);
       } else {
-        await createTransaction(user.uid, payload);
+        await createTransaction(user.uid, finalPayload);
       }
 
       navigation.goBack();
-    } catch {
+    } catch (error) {
+      console.log(error);
       setMessage("Nao foi possivel salvar a transacao.");
     } finally {
       setSubmitting(false);
@@ -300,6 +329,17 @@ export default function TransactionForm() {
               </S.DateButtonContent>
               <S.DateButtonHint>Abrir calendario</S.DateButtonHint>
             </S.DateButton>
+
+            <Button
+              title="Adicionar recibo"
+              onPress={pickImage}
+              variant="outline"
+            />
+            {image && (
+              <S.Preview
+                source={{ uri: image }}
+              />
+            )}
 
             <S.TypeSelector>
               <S.TypeButton

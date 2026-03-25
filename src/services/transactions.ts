@@ -24,6 +24,7 @@ export type TransactionInput = {
   amount: number;
   type: TransactionType;
   transactionDate: string;
+  receiptUrl: string;
 };
 
 export type Transaction = TransactionInput & {
@@ -87,9 +88,13 @@ export const getTransactionsPage = async (
   };
 };
 
-export const createTransaction = async (uid: string, data: TransactionInput) => {
+export const createTransaction = async (
+  uid: string,
+  data: TransactionInput,
+) => {
   await addDoc(getTransactionsCollection(uid), {
     ...data,
+    receiptUrl: data.receiptUrl || "",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

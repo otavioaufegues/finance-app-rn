@@ -236,3 +236,10 @@ export const CalendarFooterText = styled.Text`
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSize.medium}px;
 `;
+
+export const Preview = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-top: 10px;
+  border-radius: 8px;
+`;
